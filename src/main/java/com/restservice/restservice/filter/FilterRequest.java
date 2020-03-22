@@ -1,6 +1,5 @@
 package com.restservice.restservice.filter;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -16,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class FilterRequest implements Filter {
 
-    private static final int MAX_REQUESTS_PER_HOUR = 3;
+    private final int MAX_REQUESTS_PER_HOUR = 3;
     private static final String KEY_NAME = "requests";
 
     private LoadingCache<String, Integer> requestCounts;
