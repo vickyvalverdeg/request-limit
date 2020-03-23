@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
@@ -17,6 +19,7 @@ public class FilterRequest implements Filter {
 
     private final int MAX_REQUESTS_PER_HOUR = 3;
     private static final String KEY_NAME = "requests";
+    private static final int ZERO_REQUESTS = 0;
 
     private LoadingCache<String, Integer> requestCounts;
 
@@ -45,7 +48,10 @@ public class FilterRequest implements Filter {
 
         if(isMaximumRequestsPerHourExceeded()){
             httpServletResponse.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-            httpServletResponse.getWriter().write("Rate limit exceeded. Try again in #{n} seconds.");
+
+            httpServletResponse.getWriter().write("Rate limit exceeded. Try again in 10 seconds.");
+            resetRequestCountAfterAmountOfSeconds();
+            httpServletResponse.getWriter().flush();
         }
 
         chain.doFilter(request, response);
@@ -72,5 +78,16 @@ public class FilterRequest implements Filter {
         }
 
         return isExcededRequest;
+    }
+
+    private void resetRequestCountAfterAmountOfSeconds() {
+        new Timer().schedule(
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        requestCounts.put(KEY_NAME, ZERO_REQUESTS);
+                    }
+                }, 10000
+        );
     }
 }
