@@ -3,10 +3,12 @@ package com.restservice.restservice.filter;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Timer;
@@ -20,6 +22,7 @@ public class FilterRequest implements Filter {
     private final int MAX_REQUESTS_PER_HOUR = 3;
     private static final String KEY_NAME = "requests";
     private static final int ZERO_REQUESTS = 0;
+    final static Logger logger = Logger.getLogger(FilterRequest.class);
 
     private LoadingCache<String, Integer> requestCounts;
 
@@ -44,6 +47,7 @@ public class FilterRequest implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
         if(isMaximumRequestsPerHourExceeded()){
@@ -54,12 +58,9 @@ public class FilterRequest implements Filter {
             httpServletResponse.getWriter().flush();
         }
 
+        loggerInfo(httpServletRequest, httpServletResponse);
+
         chain.doFilter(request, response);
-    }
-
-    @Override
-    public void destroy() {
-
     }
 
     private boolean isMaximumRequestsPerHourExceeded(){
@@ -89,5 +90,12 @@ public class FilterRequest implements Filter {
                     }
                 }, 10000
         );
+    }
+
+    private void loggerInfo(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+        logger.info(String.format("Logging Request Method %s", httpServletRequest.getMethod()));
+        logger.info(String.format("Logging Request URI %s", httpServletRequest.getRequestURI()));
+        logger.info(String.format("Logging Response Status Code %s", httpServletResponse.getStatus()));
+
     }
 }

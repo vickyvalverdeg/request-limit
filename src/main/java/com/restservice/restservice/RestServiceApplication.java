@@ -1,5 +1,6 @@
 package com.restservice.restservice;
 
+import org.apache.log4j.BasicConfigurator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -7,7 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class RestServiceApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(RestServiceApplication.class, args);
+		BasicConfigurator.configure();
 	}
 
 }
